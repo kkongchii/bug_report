@@ -1,0 +1,98 @@
+import { supabase } from './supabase.js'
+import { showToast } from './main.js'
+import Chart from 'chart.js/auto'
+
+let trendChart = null
+
+// 최근 7일 날짜 레이블 생성
+function getLast7Days() {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (6 - i))
+    return d.toISOString().slice(0, 10) // 'YYYY-MM-DD'
+  })
+}
+
+// KPI 카드 업데이트
+export function updateKpiCards(data) {
+  document.getElementById('kpi-total-val').textContent = data.length
+  document.getElementById('kpi-received-val').textContent = data.filter(r => r.status === 'received').length
+  document.getElementById('kpi-processing-val').textContent = data.filter(r => r.status === 'processing').length
+  document.getElementById('kpi-done-val').textContent = data.filter(r => r.status === 'done').length
+}
+
+// 추이 차트 렌더링
+export function renderTrendChart(data) {
+  const labels = getLast7Days()
+  const counts = labels.map(day =>
+    data.filter(r => r.occurred_at.slice(0, 10) === day).length
+  )
+
+  const ctx = document.getElementById('trend-chart').getContext('2d')
+
+  if (trendChart) {
+    trendChart.data.labels = labels
+    trendChart.data.datasets[0].data = counts
+    trendChart.update()
+    return
+  }
+
+  trendChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '장애 발생 건수',
+        data: counts,
+        backgroundColor: '#1a1a2e',
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  })
+}
+
+// 최근 목록 렌더링 (최신 10건)
+export function renderRecentList(data) {
+  const tbody = document.getElementById('recent-tbody')
+  const recent = [...data]
+    .sort((a, b) => new Date(b.occurred_at) - new Date(a.occurred_at))
+    .slice(0, 10)
+
+  tbody.innerHTML = recent.map(r => `
+    <tr>
+      <td>${r.title}</td>
+      <td>${new Date(r.occurred_at).toLocaleString('ko-KR')}</td>
+      <td><span class="badge-${r.severity}">${{ high: '상', mid: '중', low: '하' }[r.severity]}</span></td>
+      <td>${{ received: '접수', processing: '처리중', done: '완료' }[r.status]}</td>
+      <td>${r.assignee ?? '-'}</td>
+      <td>${r.department ?? '-'}</td>
+    </tr>
+  `).join('')
+}
+
+// 대시보드 전체 로드
+export async function loadDashboardData() {
+  const { data, error } = await supabase
+    .from('incidents')
+    .select('*')
+    .order('occurred_at', { ascending: false })
+
+  if (error) {
+    showToast('데이터 로드 실패: ' + error.message)
+    return
+  }
+
+  updateKpiCards(data)
+  renderTrendChart(data)
+  renderRecentList(data)
+}
+
+export function initDashboard() {
+  loadDashboardData()
+}
