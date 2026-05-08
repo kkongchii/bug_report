@@ -51,15 +51,26 @@ export function renderTrendChart(data) {
       datasets: [{
         label: '장애 발생 건수',
         data: counts,
-        backgroundColor: '#1a1a2e',
-        borderRadius: 4,
+        backgroundColor: '#ff6b35',
+        hoverBackgroundColor: '#e65a1e',
+        borderRadius: 5,
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+      scales: {
+        x: {
+          ticks: { color: '#8888aa' },
+          grid: { color: '#2d2d44' }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, color: '#8888aa' },
+          grid: { color: '#2d2d44' }
+        }
+      }
     }
   })
 }
