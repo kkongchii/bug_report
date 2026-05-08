@@ -1,29 +1,39 @@
 import { supabase } from './supabase.js'
 import { showToast } from './main.js'
+import { showModal } from './modal.js'
 import Chart from 'chart.js/auto'
 
-// XSS 방지: HTML 특수문자 이스케이프
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
 
-// 차트 색상 팔레트 (디자인 참고)
 const C = {
-  accent:  '#c44a2a',
-  amber:   '#d99752',
-  blue:    '#6b8fc9',
-  green:   '#5ea870',
-  gray:    '#8a8278',
-  grid:    '#e6e2d9',
-  tick:    '#8a8278',
-  legend:  '#8a8278',
+  accent: '#c44a2a',
+  amber:  '#d99752',
+  blue:   '#6b8fc9',
+  green:  '#5ea870',
+  gray:   '#8a8278',
+  grid:   '#e6e2d9',
+  tick:   '#8a8278',
 }
 
-let trendChart = null
-let severityChart = null
-let statusChart = null
-let deptChart = null
+const SEVERITY_COLOR = { high: C.accent, mid: C.amber, low: C.blue }
+const SEVERITY_KO    = { high: '상', mid: '중', low: '하' }
+const STATUS_KO      = { received: '접수', processing: '처리중', done: '완료' }
+const STATUS_COLOR   = { received: C.gray, processing: C.accent, done: C.green }
 
-// 최근 7일 날짜 레이블 생성
+let trendChart    = null
+let severityChart = null
+let statusChart   = null
+let deptChart     = null
+let _allData      = []
+let recentListenerAdded = false
+
+// 차트 호버 시 커서 포인터로 변경
+function pointerOnHover(event, elements) {
+  const canvas = event.native?.target
+  if (canvas) canvas.style.cursor = elements.length ? 'pointer' : 'default'
+}
+
 function getLast7Days() {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
@@ -32,7 +42,6 @@ function getLast7Days() {
   })
 }
 
-// KPI 카드 업데이트
 export function updateKpiCards(data) {
   document.getElementById('kpi-total-val').textContent      = data.length
   document.getElementById('kpi-received-val').textContent   = data.filter(r => r.status === 'received').length
@@ -40,7 +49,6 @@ export function updateKpiCards(data) {
   document.getElementById('kpi-done-val').textContent       = data.filter(r => r.status === 'done').length
 }
 
-// 추이 Bar 차트
 export function renderTrendChart(data) {
   const labels = getLast7Days()
   const counts = labels.map(day =>
@@ -66,7 +74,7 @@ export function renderTrendChart(data) {
         backgroundColor: C.accent,
         hoverBackgroundColor: '#a83b20',
         borderRadius: 5,
-      }]
+      }],
     },
     options: {
       responsive: true,
@@ -74,17 +82,19 @@ export function renderTrendChart(data) {
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { color: C.tick }, grid: { color: C.grid } },
-        y: {
-          beginAtZero: true,
-          ticks: { stepSize: 1, color: C.tick },
-          grid: { color: C.grid },
-        },
+        y: { beginAtZero: true, ticks: { stepSize: 1, color: C.tick }, grid: { color: C.grid } },
       },
+      onClick: (event, elements, chart) => {
+        if (!elements.length) return
+        const label    = chart.data.labels[elements[0].index]
+        const filtered = _allData.filter(r => r.occurred_at?.slice(0, 10) === label)
+        showModal(`${label} 장애 목록`, filtered)
+      },
+      onHover: pointerOnHover,
     },
   })
 }
 
-// 심각도별 Doughnut 차트
 export function renderSeverityChart(data) {
   const counts = {
     high: data.filter(r => r.severity === 'high').length,
@@ -105,23 +115,23 @@ export function renderSeverityChart(data) {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'bottom',
-        labels: { color: C.legend, font: { size: 12 }, padding: 12 },
-      },
+      legend: { position: 'bottom', labels: { color: C.tick, font: { size: 12 }, padding: 12 } },
     },
     cutout: '65%',
+    onClick: (event, elements, chart) => {
+      if (!elements.length) return
+      const idx      = elements[0].index
+      const KEYS     = ['high', 'mid', 'low']
+      const filtered = _allData.filter(r => r.severity === KEYS[idx])
+      showModal(`심각도 "${chart.data.labels[idx]}" 장애 목록`, filtered)
+    },
+    onHover: pointerOnHover,
   }
 
-  if (severityChart) {
-    severityChart.data = chartData
-    severityChart.update()
-    return
-  }
+  if (severityChart) { severityChart.data = chartData; severityChart.update(); return }
   severityChart = new Chart(ctx, { type: 'doughnut', data: chartData, options })
 }
 
-// 상태별 Doughnut 차트
 export function renderStatusChart(data) {
   const counts = {
     received:   data.filter(r => r.status === 'received').length,
@@ -142,23 +152,23 @@ export function renderStatusChart(data) {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'bottom',
-        labels: { color: C.legend, font: { size: 12 }, padding: 12 },
-      },
+      legend: { position: 'bottom', labels: { color: C.tick, font: { size: 12 }, padding: 12 } },
     },
     cutout: '65%',
+    onClick: (event, elements, chart) => {
+      if (!elements.length) return
+      const idx      = elements[0].index
+      const KEYS     = ['received', 'processing', 'done']
+      const filtered = _allData.filter(r => r.status === KEYS[idx])
+      showModal(`상태 "${chart.data.labels[idx]}" 장애 목록`, filtered)
+    },
+    onHover: pointerOnHover,
   }
 
-  if (statusChart) {
-    statusChart.data = chartData
-    statusChart.update()
-    return
-  }
+  if (statusChart) { statusChart.data = chartData; statusChart.update(); return }
   statusChart = new Chart(ctx, { type: 'doughnut', data: chartData, options })
 }
 
-// 팀별 수평 Bar 차트 (상위 5)
 export function renderDeptChart(data) {
   const counts = {}
   data.forEach(r => {
@@ -187,40 +197,30 @@ export function renderDeptChart(data) {
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      x: {
-        beginAtZero: true,
-        ticks: { color: C.tick, stepSize: 1 },
-        grid: { color: C.grid },
-      },
-      y: {
-        ticks: { color: C.tick, font: { size: 12 } },
-        grid: { display: false },
-      },
+      x: { beginAtZero: true, ticks: { color: C.tick, stepSize: 1 }, grid: { color: C.grid } },
+      y: { ticks: { color: C.tick, font: { size: 12 } }, grid: { display: false } },
     },
+    onClick: (event, elements, chart) => {
+      if (!elements.length) return
+      const label    = chart.data.labels[elements[0].index]
+      const filtered = _allData.filter(r => (r.department || '미지정') === label)
+      showModal(`${label} 장애 목록`, filtered)
+    },
+    onHover: pointerOnHover,
   }
 
-  if (deptChart) {
-    deptChart.data = chartData
-    deptChart.update()
-    return
-  }
+  if (deptChart) { deptChart.data = chartData; deptChart.update(); return }
   deptChart = new Chart(ctx, { type: 'bar', data: chartData, options })
 }
 
-// 최근 목록 렌더링 (최신 10건)
 export function renderRecentList(data) {
-  const SEVERITY_COLOR = { high: C.accent, mid: C.amber, low: C.blue }
-  const SEVERITY_KO    = { high: '상', mid: '중', low: '하' }
-  const STATUS_KO      = { received: '접수', processing: '처리중', done: '완료' }
-  const STATUS_COLOR   = { received: C.gray, processing: C.accent, done: C.green }
-
-  const tbody = document.getElementById('recent-tbody')
+  const tbody  = document.getElementById('recent-tbody')
   const recent = [...data]
     .sort((a, b) => new Date(b.occurred_at) - new Date(a.occurred_at))
     .slice(0, 10)
 
   tbody.innerHTML = recent.map(r => `
-    <tr>
+    <tr class="clickable-row" data-id="${r.id}">
       <td>${esc(r.title)}</td>
       <td>${new Date(r.occurred_at).toLocaleString('ko-KR')}</td>
       <td><span class="pill" style="background:${SEVERITY_COLOR[r.severity]};color:#fff">${SEVERITY_KO[r.severity]}</span></td>
@@ -231,7 +231,6 @@ export function renderRecentList(data) {
   `).join('')
 }
 
-// 대시보드 전체 로드
 export async function loadDashboardData() {
   const { data, error } = await supabase
     .from('incidents')
@@ -243,6 +242,7 @@ export async function loadDashboardData() {
     return
   }
 
+  _allData = data
   updateKpiCards(data)
   renderTrendChart(data)
   renderRecentList(data)
@@ -252,5 +252,12 @@ export async function loadDashboardData() {
 }
 
 export function initDashboard() {
+  if (!recentListenerAdded) {
+    document.getElementById('recent-tbody').addEventListener('click', e => {
+      const row = e.target.closest('.clickable-row')
+      if (row) window.location.hash = `#detail/${row.dataset.id}`
+    })
+    recentListenerAdded = true
+  }
   loadDashboardData()
 }

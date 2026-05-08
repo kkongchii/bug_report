@@ -1,7 +1,6 @@
 import { supabase } from './supabase.js'
 import { showToast } from './main.js'
 
-// XSS 방지: HTML 특수문자 이스케이프
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
 
@@ -10,7 +9,8 @@ const SEVERITY_KO    = { high: '상', mid: '중', low: '하' }
 const STATUS_KO      = { received: '접수', processing: '처리중', done: '완료' }
 const STATUS_COLOR   = { received: '#8a8278', processing: '#c44a2a', done: '#5ea870' }
 
-// 목록 테이블 렌더링
+let listListenerAdded = false
+
 function renderListTable(data) {
   const tbody = document.getElementById('list-tbody')
   if (data.length === 0) {
@@ -18,7 +18,7 @@ function renderListTable(data) {
     return
   }
   tbody.innerHTML = data.map(r => `
-    <tr>
+    <tr class="clickable-row" data-id="${r.id}">
       <td>${esc(r.title)}</td>
       <td>${new Date(r.occurred_at).toLocaleString('ko-KR')}</td>
       <td><span class="pill" style="background:${SEVERITY_COLOR[r.severity]};color:#fff">${SEVERITY_KO[r.severity]}</span></td>
@@ -29,7 +29,6 @@ function renderListTable(data) {
   `).join('')
 }
 
-// 필터 조건으로 조회
 export async function loadList(filters = {}) {
   let query = supabase
     .from('incidents')
@@ -50,7 +49,6 @@ export async function loadList(filters = {}) {
   renderListTable(data)
 }
 
-// 필터 이벤트 처리
 function applyFilters() {
   const filters = {
     severity:   document.getElementById('filter-severity').value,
@@ -61,9 +59,16 @@ function applyFilters() {
 }
 
 export function initList() {
+  if (!listListenerAdded) {
+    document.getElementById('list-tbody').addEventListener('click', e => {
+      const row = e.target.closest('.clickable-row')
+      if (row) window.location.hash = `#detail/${row.dataset.id}`
+    })
+    listListenerAdded = true
+  }
+
   loadList()
 
-  // 중복 이벤트 방지
   document.getElementById('filter-severity').onchange  = applyFilters
   document.getElementById('filter-status').onchange    = applyFilters
   document.getElementById('filter-department').oninput = applyFilters

@@ -1,6 +1,8 @@
 import { initDashboard, loadDashboardData } from './dashboard.js'
 import { initForm } from './form.js'
 import { initList } from './list.js'
+import { initDetail } from './detail.js'
+import { initModal } from './modal.js'
 import { subscribeRealtime } from './realtime.js'
 
 // 토스트 메시지 표시
@@ -17,23 +19,32 @@ function activateTab(tabName) {
   document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'))
 
   const panel = document.getElementById(`tab-${tabName}`)
-  const link = document.querySelector(`.tab-link[data-tab="${tabName}"]`)
+  const link  = document.querySelector(`.tab-link[data-tab="${tabName}"]`)
   if (panel) panel.classList.remove('hidden')
-  if (link) link.classList.add('active')
+  if (link)  link.classList.add('active')
 
   if (tabName === 'dashboard') initDashboard()
-  if (tabName === 'register') initForm()
-  if (tabName === 'list') initList()
+  if (tabName === 'register')  initForm()
+  if (tabName === 'list')      initList()
 }
 
-// 해시 기반 라우팅
+// 해시 기반 라우팅 — #detail/UUID 지원
 function route() {
-  const hash = window.location.hash.replace('#', '') || 'dashboard'
-  activateTab(hash)
+  const raw = window.location.hash.replace('#', '') || 'dashboard'
+
+  if (raw.startsWith('detail/')) {
+    const id = raw.slice('detail/'.length)
+    activateTab('detail')
+    initDetail(id)
+  } else {
+    activateTab(raw)
+  }
 }
 
 window.addEventListener('hashchange', route)
+
 document.addEventListener('DOMContentLoaded', () => {
+  initModal()
   route()
   const el = document.getElementById('foot-time')
   if (el) el.textContent = new Date().toLocaleString('ko-KR')

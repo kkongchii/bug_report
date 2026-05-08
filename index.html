@@ -184,6 +184,20 @@
       </div>
     </section>
 
+    <!-- 장애 상세 -->
+    <section id="tab-detail" class="tab-panel hidden">
+      <div class="panel detail-panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-eyebrow">장애 상세</div>
+            <h2 class="panel-title" id="detail-title">-</h2>
+          </div>
+          <button class="btn-back" onclick="history.back()">← 뒤로</button>
+        </div>
+        <div id="detail-body"></div>
+      </div>
+    </section>
+
     <!-- 장애 목록 -->
     <section id="tab-list" class="tab-panel hidden">
       <div class="panel">
@@ -235,6 +249,17 @@
     <span class="mono">장애 보고 대시보드 · 인프라 모니터링</span>
     <span class="mono" id="foot-time"></span>
   </footer>
+
+  <!-- 차트 클릭 팝업 모달 -->
+  <div id="chart-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 class="modal-title" id="modal-title"></h3>
+        <button class="modal-close" id="modal-close" aria-label="닫기">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
 
   <script type="module" src="/src/main.js"></script>
 </body>
