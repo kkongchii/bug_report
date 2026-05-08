@@ -5,9 +5,10 @@
   --bg-header:  #0a0a14;
   --border:     #2d2d44;
   --accent:     #ff6b35;
+  --accent-rgb: 255, 107, 53;
   --accent-dark:#e65a1e;
   --text:       #e8e8f0;
-  --text-muted: #8888aa;
+  --text-muted: #9a9ac0;
   --success:    #2a9d8f;
   --danger:     #e63946;
   --info:       #4a9eff;
@@ -16,7 +17,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Pretendard', 'Segoe UI', sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   background: var(--bg-base);
   color: var(--text);
   font-size: 14px;
@@ -104,7 +105,6 @@ main { padding: 24px; max-width: 1200px; margin: 0 auto; }
 
 .kpi-value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
 
-#kpi-total    .kpi-value { color: var(--text); }
 #kpi-received .kpi-value { color: var(--info); }
 #kpi-processing .kpi-value { color: var(--accent); }
 #kpi-done     .kpi-value { color: var(--success); }
@@ -180,7 +180,7 @@ main { padding: 24px; max-width: 1200px; margin: 0 auto; }
 
 .incidents-table td { color: var(--text); font-size: 13px; }
 
-.incidents-table tbody tr:hover { background: rgba(255,107,53,0.05); }
+.incidents-table tbody tr:hover { background: rgba(var(--accent-rgb), 0.05); }
 
 /* ── 뱃지 ── */
 .badge-high { color: var(--danger); font-weight: 600; }
@@ -233,6 +233,7 @@ main { padding: 24px; max-width: 1200px; margin: 0 auto; }
 .incident-form textarea:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.25);
 }
 
 .incident-form select option { background: var(--bg-card); }
@@ -281,6 +282,7 @@ main { padding: 24px; max-width: 1200px; margin: 0 auto; }
 .filter-bar input:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.25);
 }
 
 /* ── 토스트 ── */
@@ -316,7 +318,7 @@ main { padding: 24px; max-width: 1200px; margin: 0 auto; }
   .kpi-card { padding: 16px; gap: 12px; }
   .kpi-value { font-size: 22px; }
 
-  .chart-sub-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .chart-sub-grid { gap: 12px; }
 
   .incident-form { grid-template-columns: 1fr; max-width: 100%; }
   .incident-form label:nth-child(7),
