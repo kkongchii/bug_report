@@ -2,6 +2,10 @@ import { supabase } from './supabase.js'
 import { showToast } from './main.js'
 import Chart from 'chart.js/auto'
 
+// XSS 방지: HTML 특수문자 이스케이프
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+
 let trendChart = null
 
 // 최근 7일 날짜 레이블 생성
@@ -66,12 +70,12 @@ export function renderRecentList(data) {
 
   tbody.innerHTML = recent.map(r => `
     <tr>
-      <td>${r.title}</td>
+      <td>${esc(r.title)}</td>
       <td>${new Date(r.occurred_at).toLocaleString('ko-KR')}</td>
       <td><span class="badge-${r.severity}">${{ high: '상', mid: '중', low: '하' }[r.severity]}</span></td>
       <td>${{ received: '접수', processing: '처리중', done: '완료' }[r.status]}</td>
-      <td>${r.assignee ?? '-'}</td>
-      <td>${r.department ?? '-'}</td>
+      <td>${esc(r.assignee ?? '-')}</td>
+      <td>${esc(r.department ?? '-')}</td>
     </tr>
   `).join('')
 }
