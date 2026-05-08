@@ -4,16 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>장애 보고 대시보드</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="header">
-    <h1>장애 보고 대시보드</h1>
-    <nav class="tab-nav">
-      <a href="#dashboard" class="tab-link" data-tab="dashboard">현황 대시보드</a>
-      <a href="#register" class="tab-link" data-tab="register">장애 등록</a>
-      <a href="#list" class="tab-link" data-tab="list">장애 목록</a>
-    </nav>
+    <div class="header-inner">
+      <h1 class="header-title">장애 보고 대시보드</h1>
+      <nav class="tab-nav">
+        <a href="#dashboard" class="tab-link" data-tab="dashboard">현황 대시보드</a>
+        <a href="#register" class="tab-link" data-tab="register">장애 등록</a>
+        <a href="#list" class="tab-link" data-tab="list">장애 목록</a>
+      </nav>
+    </div>
   </header>
 
   <div id="toast" class="toast hidden"></div>
@@ -21,14 +24,64 @@
   <main>
     <section id="tab-dashboard" class="tab-panel">
       <div class="kpi-grid">
-        <div class="kpi-card" id="kpi-total"><span class="kpi-label">전체</span><span class="kpi-value" id="kpi-total-val">-</span></div>
-        <div class="kpi-card" id="kpi-received"><span class="kpi-label">접수</span><span class="kpi-value" id="kpi-received-val">-</span></div>
-        <div class="kpi-card" id="kpi-processing"><span class="kpi-label">처리중</span><span class="kpi-value" id="kpi-processing-val">-</span></div>
-        <div class="kpi-card" id="kpi-done"><span class="kpi-label">완료</span><span class="kpi-value" id="kpi-done-val">-</span></div>
+        <div class="kpi-card" id="kpi-total">
+          <div class="kpi-icon">📋</div>
+          <div class="kpi-info">
+            <span class="kpi-label">전체</span>
+            <span class="kpi-value" id="kpi-total-val">-</span>
+          </div>
+        </div>
+        <div class="kpi-card" id="kpi-received">
+          <div class="kpi-icon">📥</div>
+          <div class="kpi-info">
+            <span class="kpi-label">접수</span>
+            <span class="kpi-value" id="kpi-received-val">-</span>
+          </div>
+        </div>
+        <div class="kpi-card" id="kpi-processing">
+          <div class="kpi-icon">⚙️</div>
+          <div class="kpi-info">
+            <span class="kpi-label">처리중</span>
+            <span class="kpi-value" id="kpi-processing-val">-</span>
+          </div>
+        </div>
+        <div class="kpi-card" id="kpi-done">
+          <div class="kpi-icon">✅</div>
+          <div class="kpi-info">
+            <span class="kpi-label">완료</span>
+            <span class="kpi-value" id="kpi-done-val">-</span>
+          </div>
+        </div>
       </div>
-      <div class="chart-wrap">
-        <canvas id="trend-chart"></canvas>
+
+      <div class="chart-card chart-main">
+        <div class="chart-title">일자별 장애 추이 (최근 7일)</div>
+        <div class="chart-wrap">
+          <canvas id="trend-chart"></canvas>
+        </div>
       </div>
+
+      <div class="chart-sub-grid">
+        <div class="chart-card">
+          <div class="chart-title">심각도별 분포</div>
+          <div class="chart-wrap chart-wrap-sm">
+            <canvas id="severity-chart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">상태별 현황</div>
+          <div class="chart-wrap chart-wrap-sm">
+            <canvas id="status-chart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">팀별 장애 건수 (상위 5)</div>
+          <div class="chart-wrap chart-wrap-sm">
+            <canvas id="dept-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
       <div class="section-title">최근 장애 목록</div>
       <table class="incidents-table" id="recent-table">
         <thead>
@@ -39,7 +92,7 @@
     </section>
 
     <section id="tab-register" class="tab-panel hidden">
-      <h2>장애 등록</h2>
+      <h2 class="page-title">장애 등록</h2>
       <form id="incident-form" class="incident-form">
         <label>제목 *<input type="text" name="title" required /></label>
         <label>발생일시 *<input type="datetime-local" name="occurred_at" required /></label>
@@ -67,7 +120,7 @@
     </section>
 
     <section id="tab-list" class="tab-panel hidden">
-      <h2>장애 목록</h2>
+      <h2 class="page-title">장애 목록</h2>
       <div class="filter-bar">
         <select id="filter-severity"><option value="">심각도 전체</option><option value="high">상</option><option value="mid">중</option><option value="low">하</option></select>
         <select id="filter-status"><option value="">상태 전체</option><option value="received">접수</option><option value="processing">처리중</option><option value="done">완료</option></select>
