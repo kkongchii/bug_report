@@ -33,7 +33,11 @@ function route() {
 }
 
 window.addEventListener('hashchange', route)
-document.addEventListener('DOMContentLoaded', route)
+document.addEventListener('DOMContentLoaded', () => {
+  route()
+  const el = document.getElementById('foot-time')
+  if (el) el.textContent = new Date().toLocaleString('ko-KR')
+})
 
 // 앱 시작 시 Realtime 구독 — 대시보드 자동 갱신
 subscribeRealtime(

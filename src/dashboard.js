@@ -6,6 +6,18 @@ import Chart from 'chart.js/auto'
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
 
+// 차트 색상 팔레트 (디자인 참고)
+const C = {
+  accent:  '#c44a2a',
+  amber:   '#d99752',
+  blue:    '#6b8fc9',
+  green:   '#5ea870',
+  gray:    '#8a8278',
+  grid:    '#e6e2d9',
+  tick:    '#8a8278',
+  legend:  '#8a8278',
+}
+
 let trendChart = null
 let severityChart = null
 let statusChart = null
@@ -16,19 +28,19 @@ function getLast7Days() {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
-    return d.toISOString().slice(0, 10) // 'YYYY-MM-DD'
+    return d.toISOString().slice(0, 10)
   })
 }
 
 // KPI 카드 업데이트
 export function updateKpiCards(data) {
-  document.getElementById('kpi-total-val').textContent = data.length
-  document.getElementById('kpi-received-val').textContent = data.filter(r => r.status === 'received').length
+  document.getElementById('kpi-total-val').textContent      = data.length
+  document.getElementById('kpi-received-val').textContent   = data.filter(r => r.status === 'received').length
   document.getElementById('kpi-processing-val').textContent = data.filter(r => r.status === 'processing').length
-  document.getElementById('kpi-done-val').textContent = data.filter(r => r.status === 'done').length
+  document.getElementById('kpi-done-val').textContent       = data.filter(r => r.status === 'done').length
 }
 
-// 추이 차트 렌더링
+// 추이 Bar 차트
 export function renderTrendChart(data) {
   const labels = getLast7Days()
   const counts = labels.map(day =>
@@ -51,8 +63,8 @@ export function renderTrendChart(data) {
       datasets: [{
         label: '장애 발생 건수',
         data: counts,
-        backgroundColor: '#ff6b35',
-        hoverBackgroundColor: '#e65a1e',
+        backgroundColor: C.accent,
+        hoverBackgroundColor: '#a83b20',
         borderRadius: 5,
       }]
     },
@@ -61,17 +73,14 @@ export function renderTrendChart(data) {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: {
-          ticks: { color: '#8888aa' },
-          grid: { color: '#2d2d44' }
-        },
+        x: { ticks: { color: C.tick }, grid: { color: C.grid } },
         y: {
           beginAtZero: true,
-          ticks: { stepSize: 1, color: '#8888aa' },
-          grid: { color: '#2d2d44' }
-        }
-      }
-    }
+          ticks: { stepSize: 1, color: C.tick },
+          grid: { color: C.grid },
+        },
+      },
+    },
   })
 }
 
@@ -88,9 +97,9 @@ export function renderSeverityChart(data) {
     labels: ['상', '중', '하'],
     datasets: [{
       data: [counts.high, counts.mid, counts.low],
-      backgroundColor: ['#e63946', '#ff6b35', '#4a9eff'],
+      backgroundColor: [C.accent, C.amber, C.blue],
       borderWidth: 0,
-    }]
+    }],
   }
   const options = {
     responsive: true,
@@ -98,8 +107,8 @@ export function renderSeverityChart(data) {
     plugins: {
       legend: {
         position: 'bottom',
-        labels: { color: '#8888aa', font: { size: 12 }, padding: 12 }
-      }
+        labels: { color: C.legend, font: { size: 12 }, padding: 12 },
+      },
     },
     cutout: '65%',
   }
@@ -125,9 +134,9 @@ export function renderStatusChart(data) {
     labels: ['접수', '처리중', '완료'],
     datasets: [{
       data: [counts.received, counts.processing, counts.done],
-      backgroundColor: ['#8888aa', '#ff6b35', '#2a9d8f'],
+      backgroundColor: [C.gray, C.accent, C.green],
       borderWidth: 0,
-    }]
+    }],
   }
   const options = {
     responsive: true,
@@ -135,8 +144,8 @@ export function renderStatusChart(data) {
     plugins: {
       legend: {
         position: 'bottom',
-        labels: { color: '#8888aa', font: { size: 12 }, padding: 12 }
-      }
+        labels: { color: C.legend, font: { size: 12 }, padding: 12 },
+      },
     },
     cutout: '65%',
   }
@@ -157,10 +166,7 @@ export function renderDeptChart(data) {
     counts[dept] = (counts[dept] || 0) + 1
   })
 
-  const sorted = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5)
   const labels = sorted.map(([k]) => k)
   const values = sorted.map(([, v]) => v)
 
@@ -170,28 +176,27 @@ export function renderDeptChart(data) {
     datasets: [{
       label: '건수',
       data: values,
-      backgroundColor: '#ff6b35',
+      backgroundColor: C.accent,
+      hoverBackgroundColor: '#a83b20',
       borderRadius: 4,
-    }]
+    }],
   }
   const options = {
     indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false }
-    },
+    plugins: { legend: { display: false } },
     scales: {
       x: {
         beginAtZero: true,
-        ticks: { color: '#8888aa', stepSize: 1 },
-        grid: { color: '#2d2d44' }
+        ticks: { color: C.tick, stepSize: 1 },
+        grid: { color: C.grid },
       },
       y: {
-        ticks: { color: '#8888aa', font: { size: 12 } },
-        grid: { display: false }
-      }
-    }
+        ticks: { color: C.tick, font: { size: 12 } },
+        grid: { display: false },
+      },
+    },
   }
 
   if (deptChart) {
@@ -204,6 +209,11 @@ export function renderDeptChart(data) {
 
 // 최근 목록 렌더링 (최신 10건)
 export function renderRecentList(data) {
+  const SEVERITY_COLOR = { high: C.accent, mid: C.amber, low: C.blue }
+  const SEVERITY_KO    = { high: '상', mid: '중', low: '하' }
+  const STATUS_KO      = { received: '접수', processing: '처리중', done: '완료' }
+  const STATUS_COLOR   = { received: C.gray, processing: C.accent, done: C.green }
+
   const tbody = document.getElementById('recent-tbody')
   const recent = [...data]
     .sort((a, b) => new Date(b.occurred_at) - new Date(a.occurred_at))
@@ -213,8 +223,8 @@ export function renderRecentList(data) {
     <tr>
       <td>${esc(r.title)}</td>
       <td>${new Date(r.occurred_at).toLocaleString('ko-KR')}</td>
-      <td><span class="badge-${r.severity}">${{ high: '상', mid: '중', low: '하' }[r.severity]}</span></td>
-      <td>${{ received: '접수', processing: '처리중', done: '완료' }[r.status]}</td>
+      <td><span class="pill" style="background:${SEVERITY_COLOR[r.severity]};color:#fff">${SEVERITY_KO[r.severity]}</span></td>
+      <td><span class="pill ghost" style="color:${STATUS_COLOR[r.status]}">${STATUS_KO[r.status]}</span></td>
       <td>${esc(r.assignee ?? '-')}</td>
       <td>${esc(r.department ?? '-')}</td>
     </tr>

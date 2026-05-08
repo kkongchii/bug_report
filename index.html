@@ -4,136 +4,237 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>장애 보고 대시보드</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="header">
     <div class="header-inner">
-      <h1 class="header-title">장애 보고 대시보드</h1>
+      <div class="brand">
+        <div class="logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <circle cx="12" cy="13" r="6" stroke="oklch(0.25 0.01 80)" stroke-width="1.6"/>
+            <path d="M12 5v2M6 13H4M20 13h-2M7.5 8.5L6 7M16.5 8.5L18 7M7.5 17.5L6 19M16.5 17.5L18 19" stroke="oklch(0.25 0.01 80)" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="10" cy="12" r="0.9" fill="oklch(0.25 0.01 80)"/>
+            <circle cx="14" cy="14" r="0.9" fill="oklch(0.25 0.01 80)"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">장애 보고 대시보드</div>
+          <div class="brand-sub">인프라 / 장애 트래킹</div>
+        </div>
+      </div>
+
       <nav class="tab-nav">
         <a href="#dashboard" class="tab-link" data-tab="dashboard">현황 대시보드</a>
-        <a href="#register" class="tab-link" data-tab="register">장애 등록</a>
-        <a href="#list" class="tab-link" data-tab="list">장애 목록</a>
+        <a href="#register"  class="tab-link" data-tab="register">장애 등록</a>
+        <a href="#list"      class="tab-link" data-tab="list">장애 목록</a>
       </nav>
+
+      <div class="header-meta">
+        <span class="chip-mono live"><span class="dot"></span>실시간 동기화</span>
+      </div>
     </div>
   </header>
 
   <div id="toast" class="toast hidden"></div>
 
   <main>
+    <!-- 현황 대시보드 -->
     <section id="tab-dashboard" class="tab-panel">
+
       <div class="kpi-grid">
         <div class="kpi-card" id="kpi-total">
-          <div class="kpi-icon" aria-hidden="true">📋</div>
-          <div class="kpi-info">
-            <span class="kpi-label">전체</span>
-            <span class="kpi-value" id="kpi-total-val">-</span>
+          <div class="kpi-label">전체 장애</div>
+          <div class="kpi-row">
+            <div class="kpi-value" id="kpi-total-val">-</div>
           </div>
+          <div class="kpi-sub">누적 등록 건수</div>
         </div>
-        <div class="kpi-card" id="kpi-received">
-          <div class="kpi-icon" aria-hidden="true">📥</div>
-          <div class="kpi-info">
-            <span class="kpi-label">접수</span>
-            <span class="kpi-value" id="kpi-received-val">-</span>
+        <div class="kpi-card accent" id="kpi-received">
+          <div class="kpi-label">접수</div>
+          <div class="kpi-row">
+            <div class="kpi-value" id="kpi-received-val">-</div>
           </div>
+          <div class="kpi-sub">대기 중인 장애</div>
         </div>
-        <div class="kpi-card" id="kpi-processing">
-          <div class="kpi-icon" aria-hidden="true">⚙️</div>
-          <div class="kpi-info">
-            <span class="kpi-label">처리중</span>
-            <span class="kpi-value" id="kpi-processing-val">-</span>
+        <div class="kpi-card accent" id="kpi-processing">
+          <div class="kpi-label">처리중</div>
+          <div class="kpi-row">
+            <div class="kpi-value" id="kpi-processing-val">-</div>
           </div>
+          <div class="kpi-sub">진행 중인 장애</div>
         </div>
         <div class="kpi-card" id="kpi-done">
-          <div class="kpi-icon" aria-hidden="true">✅</div>
-          <div class="kpi-info">
-            <span class="kpi-label">완료</span>
-            <span class="kpi-value" id="kpi-done-val">-</span>
+          <div class="kpi-label">완료</div>
+          <div class="kpi-row">
+            <div class="kpi-value" id="kpi-done-val">-</div>
           </div>
+          <div class="kpi-sub">처리 완료</div>
         </div>
       </div>
 
-      <div class="chart-card chart-main">
-        <div class="chart-title">일자별 장애 추이 (최근 7일)</div>
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-eyebrow">일자별 추이</div>
+            <h2 class="panel-title">최근 7일 장애 발생</h2>
+          </div>
+        </div>
         <div class="chart-wrap">
           <canvas id="trend-chart"></canvas>
         </div>
       </div>
 
       <div class="chart-sub-grid">
-        <div class="chart-card">
-          <div class="chart-title">심각도별 분포</div>
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-eyebrow">심각도</div>
+              <h2 class="panel-title">심각도별 분포</h2>
+            </div>
+          </div>
           <div class="chart-wrap chart-wrap-sm">
             <canvas id="severity-chart"></canvas>
           </div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">상태별 현황</div>
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-eyebrow">상태</div>
+              <h2 class="panel-title">상태별 현황</h2>
+            </div>
+          </div>
           <div class="chart-wrap chart-wrap-sm">
             <canvas id="status-chart"></canvas>
           </div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">팀별 장애 건수 (상위 5)</div>
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-eyebrow">본부 / 팀</div>
+              <h2 class="panel-title">팀별 장애 (상위 5)</h2>
+            </div>
+          </div>
           <div class="chart-wrap chart-wrap-sm">
             <canvas id="dept-chart"></canvas>
           </div>
         </div>
       </div>
 
-      <h3 class="section-title">최근 장애 목록</h3>
-      <table class="incidents-table" id="recent-table">
-        <thead>
-          <tr><th>제목</th><th>발생일시</th><th>심각도</th><th>상태</th><th>담당자</th><th>본부/팀</th></tr>
-        </thead>
-        <tbody id="recent-tbody"></tbody>
-      </table>
-    </section>
-
-    <section id="tab-register" class="tab-panel hidden">
-      <h2 class="page-title">장애 등록</h2>
-      <form id="incident-form" class="incident-form">
-        <label>제목 *<input type="text" name="title" required /></label>
-        <label>발생일시 *<input type="datetime-local" name="occurred_at" required /></label>
-        <label>심각도 *
-          <select name="severity" required>
-            <option value="">선택</option>
-            <option value="high">상</option>
-            <option value="mid">중</option>
-            <option value="low">하</option>
-          </select>
-        </label>
-        <label>상태 *
-          <select name="status" required>
-            <option value="received">접수</option>
-            <option value="processing">처리중</option>
-            <option value="done">완료</option>
-          </select>
-        </label>
-        <label>담당자<input type="text" name="assignee" /></label>
-        <label>본부/팀<input type="text" name="department" /></label>
-        <label>원인<textarea name="cause" rows="3"></textarea></label>
-        <label>해결내용<textarea name="resolution" rows="3"></textarea></label>
-        <button type="submit" class="btn-primary">등록</button>
-      </form>
-    </section>
-
-    <section id="tab-list" class="tab-panel hidden">
-      <h2 class="page-title">장애 목록</h2>
-      <div class="filter-bar">
-        <select id="filter-severity"><option value="">심각도 전체</option><option value="high">상</option><option value="mid">중</option><option value="low">하</option></select>
-        <select id="filter-status"><option value="">상태 전체</option><option value="received">접수</option><option value="processing">처리중</option><option value="done">완료</option></select>
-        <input type="text" id="filter-department" placeholder="본부/팀 검색" />
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-eyebrow">최근 목록</div>
+            <h2 class="panel-title">최근 장애</h2>
+          </div>
+        </div>
+        <table class="incidents-table" id="recent-table">
+          <thead>
+            <tr>
+              <th>제목</th>
+              <th>발생일시</th>
+              <th>심각도</th>
+              <th>상태</th>
+              <th>담당자</th>
+              <th>본부/팀</th>
+            </tr>
+          </thead>
+          <tbody id="recent-tbody"></tbody>
+        </table>
       </div>
-      <table class="incidents-table" id="list-table">
-        <thead>
-          <tr><th>제목</th><th>발생일시</th><th>심각도</th><th>상태</th><th>담당자</th><th>본부/팀</th></tr>
-        </thead>
-        <tbody id="list-tbody"></tbody>
-      </table>
+
+    </section>
+
+    <!-- 장애 등록 -->
+    <section id="tab-register" class="tab-panel hidden">
+      <div class="panel form-panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-eyebrow">등록</div>
+            <h2 class="panel-title">장애 등록</h2>
+          </div>
+        </div>
+        <form id="incident-form" class="incident-form">
+          <label>제목 *<input type="text" name="title" required /></label>
+          <label>발생일시 *<input type="datetime-local" name="occurred_at" required /></label>
+          <label>심각도 *
+            <select name="severity" required>
+              <option value="">선택</option>
+              <option value="high">상</option>
+              <option value="mid">중</option>
+              <option value="low">하</option>
+            </select>
+          </label>
+          <label>상태 *
+            <select name="status" required>
+              <option value="received">접수</option>
+              <option value="processing">처리중</option>
+              <option value="done">완료</option>
+            </select>
+          </label>
+          <label>담당자<input type="text" name="assignee" /></label>
+          <label>본부/팀<input type="text" name="department" /></label>
+          <label>원인<textarea name="cause" rows="3"></textarea></label>
+          <label>해결내용<textarea name="resolution" rows="3"></textarea></label>
+          <button type="submit" class="btn-primary">등록</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 장애 목록 -->
+    <section id="tab-list" class="tab-panel hidden">
+      <div class="panel">
+        <div class="panel-head wrap">
+          <div>
+            <div class="panel-eyebrow">전체 목록</div>
+            <h2 class="panel-title">장애 목록</h2>
+          </div>
+          <div class="filters">
+            <label class="filter">
+              <span class="filter-label">심각도</span>
+              <select id="filter-severity">
+                <option value="">전체</option>
+                <option value="high">상</option>
+                <option value="mid">중</option>
+                <option value="low">하</option>
+              </select>
+            </label>
+            <label class="filter">
+              <span class="filter-label">상태</span>
+              <select id="filter-status">
+                <option value="">전체</option>
+                <option value="received">접수</option>
+                <option value="processing">처리중</option>
+                <option value="done">완료</option>
+              </select>
+            </label>
+            <input type="text" class="search" id="filter-department" placeholder="본부/팀 검색…" />
+          </div>
+        </div>
+        <table class="incidents-table" id="list-table">
+          <thead>
+            <tr>
+              <th>제목</th>
+              <th>발생일시</th>
+              <th>심각도</th>
+              <th>상태</th>
+              <th>담당자</th>
+              <th>본부/팀</th>
+            </tr>
+          </thead>
+          <tbody id="list-tbody"></tbody>
+        </table>
+      </div>
     </section>
   </main>
+
+  <footer class="foot">
+    <span class="mono">장애 보고 대시보드 · 인프라 모니터링</span>
+    <span class="mono" id="foot-time"></span>
+  </footer>
 
   <script type="module" src="/src/main.js"></script>
 </body>
