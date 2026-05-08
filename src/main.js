@@ -1,6 +1,7 @@
-import { initDashboard } from './dashboard.js'
+import { initDashboard, loadDashboardData } from './dashboard.js'
 import { initForm } from './form.js'
 import { initList } from './list.js'
+import { subscribeRealtime } from './realtime.js'
 
 // 토스트 메시지 표시
 export function showToast(message) {
@@ -33,3 +34,9 @@ function route() {
 
 window.addEventListener('hashchange', route)
 document.addEventListener('DOMContentLoaded', route)
+
+// 앱 시작 시 Realtime 구독 — 대시보드 자동 갱신
+subscribeRealtime(
+  () => loadDashboardData(),
+  () => loadDashboardData()
+)
