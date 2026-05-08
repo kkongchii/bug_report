@@ -32,7 +32,7 @@ export function updateKpiCards(data) {
 export function renderTrendChart(data) {
   const labels = getLast7Days()
   const counts = labels.map(day =>
-    data.filter(r => r.occurred_at.slice(0, 10) === day).length
+    data.filter(r => r.occurred_at?.slice(0, 10) === day).length
   )
 
   const ctx = document.getElementById('trend-chart').getContext('2d')
