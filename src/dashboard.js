@@ -101,6 +101,43 @@ export function renderSeverityChart(data) {
   severityChart = new Chart(ctx, { type: 'doughnut', data: chartData, options })
 }
 
+// 상태별 Doughnut 차트
+export function renderStatusChart(data) {
+  const counts = {
+    received:   data.filter(r => r.status === 'received').length,
+    processing: data.filter(r => r.status === 'processing').length,
+    done:       data.filter(r => r.status === 'done').length,
+  }
+
+  const ctx = document.getElementById('status-chart').getContext('2d')
+  const chartData = {
+    labels: ['접수', '처리중', '완료'],
+    datasets: [{
+      data: [counts.received, counts.processing, counts.done],
+      backgroundColor: ['#8888aa', '#ff6b35', '#2a9d8f'],
+      borderWidth: 0,
+    }]
+  }
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color: '#8888aa', font: { size: 12 }, padding: 12 }
+      }
+    },
+    cutout: '65%',
+  }
+
+  if (statusChart) {
+    statusChart.data = chartData
+    statusChart.update()
+    return
+  }
+  statusChart = new Chart(ctx, { type: 'doughnut', data: chartData, options })
+}
+
 // 최근 목록 렌더링 (최신 10건)
 export function renderRecentList(data) {
   const tbody = document.getElementById('recent-tbody')
@@ -136,6 +173,7 @@ export async function loadDashboardData() {
   renderTrendChart(data)
   renderRecentList(data)
   renderSeverityChart(data)
+  renderStatusChart(data)
 }
 
 export function initDashboard() {
