@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>장애 보고 대시보드</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>장애 보고 대시보드</h1>
+    <nav class="tab-nav">
+      <a href="#dashboard" class="tab-link" data-tab="dashboard">현황 대시보드</a>
+      <a href="#register" class="tab-link" data-tab="register">장애 등록</a>
+      <a href="#list" class="tab-link" data-tab="list">장애 목록</a>
+    </nav>
+  </header>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <main>
+    <section id="tab-dashboard" class="tab-panel">
+      <div class="kpi-grid">
+        <div class="kpi-card" id="kpi-total"><span class="kpi-label">전체</span><span class="kpi-value" id="kpi-total-val">-</span></div>
+        <div class="kpi-card" id="kpi-received"><span class="kpi-label">접수</span><span class="kpi-value" id="kpi-received-val">-</span></div>
+        <div class="kpi-card" id="kpi-processing"><span class="kpi-label">처리중</span><span class="kpi-value" id="kpi-processing-val">-</span></div>
+        <div class="kpi-card" id="kpi-done"><span class="kpi-label">완료</span><span class="kpi-value" id="kpi-done-val">-</span></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="trend-chart"></canvas>
+      </div>
+      <div class="section-title">최근 장애 목록</div>
+      <table class="incidents-table" id="recent-table">
+        <thead>
+          <tr><th>제목</th><th>발생일시</th><th>심각도</th><th>상태</th><th>담당자</th><th>본부/팀</th></tr>
+        </thead>
+        <tbody id="recent-tbody"></tbody>
+      </table>
+    </section>
+
+    <section id="tab-register" class="tab-panel hidden">
+      <h2>장애 등록</h2>
+      <form id="incident-form" class="incident-form">
+        <label>제목 *<input type="text" name="title" required /></label>
+        <label>발생일시 *<input type="datetime-local" name="occurred_at" required /></label>
+        <label>심각도 *
+          <select name="severity" required>
+            <option value="">선택</option>
+            <option value="high">상</option>
+            <option value="mid">중</option>
+            <option value="low">하</option>
+          </select>
+        </label>
+        <label>상태 *
+          <select name="status" required>
+            <option value="received">접수</option>
+            <option value="processing">처리중</option>
+            <option value="done">완료</option>
+          </select>
+        </label>
+        <label>담당자<input type="text" name="assignee" /></label>
+        <label>본부/팀<input type="text" name="department" /></label>
+        <label>원인<textarea name="cause" rows="3"></textarea></label>
+        <label>해결내용<textarea name="resolution" rows="3"></textarea></label>
+        <button type="submit" class="btn-primary">등록</button>
+      </form>
+    </section>
+
+    <section id="tab-list" class="tab-panel hidden">
+      <h2>장애 목록</h2>
+      <div class="filter-bar">
+        <select id="filter-severity"><option value="">심각도 전체</option><option value="high">상</option><option value="mid">중</option><option value="low">하</option></select>
+        <select id="filter-status"><option value="">상태 전체</option><option value="received">접수</option><option value="processing">처리중</option><option value="done">완료</option></select>
+        <input type="text" id="filter-department" placeholder="본부/팀 검색" />
+      </div>
+      <table class="incidents-table" id="list-table">
+        <thead>
+          <tr><th>제목</th><th>발생일시</th><th>심각도</th><th>상태</th><th>담당자</th><th>본부/팀</th></tr>
+        </thead>
+        <tbody id="list-tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
