@@ -138,6 +138,59 @@ export function renderStatusChart(data) {
   statusChart = new Chart(ctx, { type: 'doughnut', data: chartData, options })
 }
 
+// 팀별 수평 Bar 차트 (상위 5)
+export function renderDeptChart(data) {
+  const counts = {}
+  data.forEach(r => {
+    const dept = r.department || '미지정'
+    counts[dept] = (counts[dept] || 0) + 1
+  })
+
+  const sorted = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+
+  const labels = sorted.map(([k]) => k)
+  const values = sorted.map(([, v]) => v)
+
+  const ctx = document.getElementById('dept-chart').getContext('2d')
+  const chartData = {
+    labels,
+    datasets: [{
+      label: '건수',
+      data: values,
+      backgroundColor: '#ff6b35',
+      borderRadius: 4,
+    }]
+  }
+  const options = {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        ticks: { color: '#8888aa', stepSize: 1 },
+        grid: { color: '#2d2d44' }
+      },
+      y: {
+        ticks: { color: '#8888aa', font: { size: 12 } },
+        grid: { display: false }
+      }
+    }
+  }
+
+  if (deptChart) {
+    deptChart.data = chartData
+    deptChart.update()
+    return
+  }
+  deptChart = new Chart(ctx, { type: 'bar', data: chartData, options })
+}
+
 // 최근 목록 렌더링 (최신 10건)
 export function renderRecentList(data) {
   const tbody = document.getElementById('recent-tbody')
@@ -174,6 +227,7 @@ export async function loadDashboardData() {
   renderRecentList(data)
   renderSeverityChart(data)
   renderStatusChart(data)
+  renderDeptChart(data)
 }
 
 export function initDashboard() {
