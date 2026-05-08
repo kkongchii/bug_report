@@ -7,6 +7,9 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
 
 let trendChart = null
+let severityChart = null
+let statusChart = null
+let deptChart = null
 
 // 최근 7일 날짜 레이블 생성
 function getLast7Days() {
@@ -61,6 +64,43 @@ export function renderTrendChart(data) {
   })
 }
 
+// 심각도별 Doughnut 차트
+export function renderSeverityChart(data) {
+  const counts = {
+    high: data.filter(r => r.severity === 'high').length,
+    mid:  data.filter(r => r.severity === 'mid').length,
+    low:  data.filter(r => r.severity === 'low').length,
+  }
+
+  const ctx = document.getElementById('severity-chart').getContext('2d')
+  const chartData = {
+    labels: ['상', '중', '하'],
+    datasets: [{
+      data: [counts.high, counts.mid, counts.low],
+      backgroundColor: ['#e63946', '#ff6b35', '#4a9eff'],
+      borderWidth: 0,
+    }]
+  }
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color: '#8888aa', font: { size: 12 }, padding: 12 }
+      }
+    },
+    cutout: '65%',
+  }
+
+  if (severityChart) {
+    severityChart.data = chartData
+    severityChart.update()
+    return
+  }
+  severityChart = new Chart(ctx, { type: 'doughnut', data: chartData, options })
+}
+
 // 최근 목록 렌더링 (최신 10건)
 export function renderRecentList(data) {
   const tbody = document.getElementById('recent-tbody')
@@ -95,6 +135,7 @@ export async function loadDashboardData() {
   updateKpiCards(data)
   renderTrendChart(data)
   renderRecentList(data)
+  renderSeverityChart(data)
 }
 
 export function initDashboard() {
